@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generator Treści · Renata Tupek</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #fdf8f3; font-family: Georgia, serif; }
+    button:hover:not(:disabled) { opacity: 0.85; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // ⚠️ WKLEJ SWÓJ API KEY TUTAJ:
+    const API_KEY = "TWÓJ_KLUCZ_API_TUTAJ";
+
+    const STYLE_DNA = `
+STYL PISANIA RENATY (trzymaj się tego ściśle):
+- Krótkie, uderzające zdania. Często 1-3 słowa na linię.
+- Myślniki „—" zamiast przecinków
+- Zdania od: "Bo...", "I...", "A...", "Dlatego...", "Tylko..."
+- CAPS dla kluczowych słów
+- Obalanie mitów: "[Mit]" → "A prawda jest inna."
+- Listy z ikonami: ❌ dla błędów, ✅ dla prawdy, 👉 dla kluczowych myśli
+- Renata mówi o sobie ("Po 15 latach...", "Gdybym dziś...")
+- "To nie jest Twoja wina", "Znam to uczucie"
+
+PRZYKŁAD:
+"To TWÓJ UMYSŁ decyduje o 96% Twojej sprzedaży.
+Strategia to tylko 4%.
+
+Dlatego możesz mieć świetną ofertę, piękną stronę, najlepszy skrypt...
+a nadal czuć, że coś Cię zatrzymuje. 🔴
+
+❌ „Nie narzucaj się."
+❌ „Sprzedaż jest trudna."
+❌ „Nie nadajesz się do tego."
+
+Twój mózg traktuje te zdania jak FAKTY."
+
+CTA: Magiczne słowo w komentarzu / "Wyślij komuś" / "Zostań ze mną na profilu"
+`;
+
+    const BRAND = {
+      niche: "trenerka skutecznej sprzedaży, praktyk z 15-letnim doświadczeniem",
+      philosophy: "Sprzedaż bez manipulacji — przez zmianę mindset, słuchanie i budowanie relacji. Sprzedaż to pomaganie a nie wciskanie.",
+      hashtags: "#sprzedaż #renatatupek #sprzedaznaluzie #psychologiasprzedazy #mindsetsprzedazy #przekonania #skutecznasprzedaz #formula964",
+    };
+
+    const FORMATS = [
+      { id: "post", label: "📝 Post", color: "#1a1a1a" },
+      { id: "carousel", label: "🎠 Karuzela", color: "#8B0000" },
+      { id: "reel", label: "🎬 Reel", color: "#1877F2" },
+    ];
+
+    const PLATFORMS = [
+      { id: "instagram", label: "Instagram", color: "#E1306C" },
+      { id: "facebook", label: "Facebook", color: "#1877F2" },
+    ];
+
+    const TOPICS = [
+      "Strach przed słowem NIE",
+      "Obiekcja 'muszę to przemyśleć'",
+      "Sprzedaż bez wciskania",
+      "Mindset sprzedawcy",
+      "Przekonania blokujące sprzedaż",
+      "Budowanie zaufania klienta",
+      "Formuła 96/4",
+      "Sprzedawcą trzeba się urodzić? MIT!",
+      "Dlaczego klienci mówią 'za drogo'",
+      "Jak słuchać zamiast mówić",
+    ];
+
+    const FORMAT_COLORS = { post: "#1a1a1a", carousel: "#8B0000", reel: "#1877F2" };
+
+    function buildPrompt(topic, format, platform) {
+      const plt = platform === "instagram" ? "Instagram (mobilny, max 2200 znaków)" : "Facebook (można dłużej)";
+      if (format === "post") return `Jesteś copywriterem Renaty Tupek-Sienickiej (${BRAND.niche}).
+Filozofia: ${BRAND.philosophy}
+Platforma: ${plt}
+${STYLE_DNA}
+ZADANIE: Napisz gotowy POST na temat: "${topic}"
+Struktura: HOOK → ROZWINIĘCIE (3-5 akapitów) → PUENTA → CTA z magicznym słowem → HASHTAGI: ${BRAND.hashtags}
+Napisz TYLKO gotowy post. Bez wstępu.`;
+
+      if (format === "carousel") return `Jesteś copywriterem Renaty Tupek-Sienickiej (${BRAND.niche}).
+Filozofia: ${BRAND.philosophy}
+Platforma: ${plt}
+${STYLE_DNA}
+ZADANIE: Napisz gotową KARUZELĘ (7-9 slajdów) na temat: "${topic}"
+Format: ---\nSLAJD [N]: [TYTUŁ CAPS]\n[Treść 2-4 zdania]\n📸 Wizualnie: [opis]\n---
+Slajd 1: hook | 2-3: problem | 4-6: edukacja | 7-8: przełom | ostatni: CTA
+Na końcu: CAPTION: [3-4 zdania + hashtagi: ${BRAND.hashtags}]
+Napisz TYLKO karuzelę. Bez wstępu.`;
+
+      if (format === "reel") return `Jesteś copywriterem Renaty Tupek-Sienickiej (${BRAND.niche}).
+Filozofia: ${BRAND.philosophy}
+Platforma: ${plt}
+${STYLE_DNA}
+GŁOS RENATY: "Masz wrażenie że sprzedaż jest trudna? Powiem Ci tak: nie musi tak być. Brzmi absurdalnie? Wiem, też tak myślałam — ale serio, to jest możliwe."
+SIGNATURE: "Powiem Ci tak:", "Powiem Ci więcej —", "Brzmi absurdalnie? Wiem, też tak myślałam.", potoczne: serio, bo naprawdę
+ZADANIE: Skrypt REELA 45-60 sek na temat: "${topic}"
+📱 WIZUALNY HOOK [0-2s]: [pomysł]
+🎬 HOOK MÓWIONY [2-5s]:
+📖 PROBLEM [5-18s]:
+💡 PRZEŁOM [18-50s]:
+✅ CTA [50-60s]:
+💬 CAPTION: [tekst + hashtagi: ${BRAND.hashtags}]
+🎥 WSKAZÓWKI: [lokalizacja, ruch]
+Napisz TYLKO skrypt. Bez wstępu.`;
+    }
+
+    const TABS = ["generator", "historia", "ulubione"];
+    const TAB_LABELS = { generator: "✦ Generator", historia: "🕐 Historia", ulubione: "⭐ Ulubione" };
+
+    function FormatBadge({ fmt, platform }) {
+      return (
+        <span style={{
+          display: "inline-flex", alignItems: "center", padding: "2px 8px",
+          borderRadius: "20px", fontSize: "11px", fontFamily: "sans-serif", fontWeight: "700",
+          background: `${FORMAT_COLORS[fmt]}15`, color: FORMAT_COLORS[fmt],
+          border: `1px solid ${FORMAT_COLORS[fmt]}30`,
+        }}>
+          {FORMATS.find(f => f.id === fmt)?.label} · {platform === "instagram" ? "IG" : "FB"}
+        </span>
+      );
+    }
+
+    function EntryCard({ entry, onToggleFav, isFav, onCopy }) {
+      const [expanded, setExpanded] = useState(false);
+      return (
+        <div style={{
+          background: "#fff", border: "1px solid #e8e8e8", borderRadius: "12px",
+          padding: "16px", marginBottom: "12px", borderLeft: `3px solid ${FORMAT_COLORS[entry.format]}`,
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px", gap: "8px" }}>
+            <div>
+              <FormatBadge fmt={entry.format} platform={entry.platform} />
+              <p style={{ margin: "6px 0 0", fontFamily: "sans-serif", fontSize: "13px", fontWeight: "700", color: "#1a1a1a" }}>{entry.topic}</p>
+              <p style={{ margin: "2px 0 0", fontFamily: "sans-serif", fontSize: "11px", color: "#bbb" }}>{entry.date}</p>
+            </div>
+            <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+              <button onClick={() => onToggleFav(entry)} style={{
+                padding: "6px 10px", border: "1px solid #e0e0e0", borderRadius: "8px",
+                background: isFav ? "#fff8e1" : "#fff", color: isFav ? "#f59e0b" : "#bbb",
+                fontSize: "14px", cursor: "pointer",
+              }}>{isFav ? "⭐" : "☆"}</button>
+              <button onClick={() => onCopy(entry.text)} style={{
+                padding: "6px 12px", background: "#1a1a1a", color: "#fff",
+                border: "none", borderRadius: "8px", fontFamily: "sans-serif",
+                fontSize: "11px", fontWeight: "700", cursor: "pointer",
+              }}>Kopiuj</button>
+            </div>
+          </div>
+          <div style={{
+            background: "#fafafa", borderRadius: "8px", padding: "12px",
+            whiteSpace: "pre-wrap", fontSize: "13px", fontFamily: "Georgia, serif",
+            color: "#333", lineHeight: "1.7",
+            maxHeight: expanded ? "none" : "160px", overflow: "hidden", position: "relative",
+          }}>
+            {entry.text}
+            {!expanded && <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "40px", background: "linear-gradient(transparent, #fafafa)" }} />}
+          </div>
+          <button onClick={() => setExpanded(!expanded)} style={{
+            marginTop: "6px", background: "transparent", border: "none",
+            color: "#8B0000", fontFamily: "sans-serif", fontSize: "12px",
+            fontWeight: "700", cursor: "pointer", padding: "4px 0",
+          }}>{expanded ? "▲ Zwiń" : "▼ Rozwiń"}</button>
+        </div>
+      );
+    }
+
+    function App() {
+      const [tab, setTab] = useState("generator");
+      const [topic, setTopic] = useState("");
+      const [format, setFormat] = useState("post");
+      const [platform, setPlatform] = useState("instagram");
+      const [result, setResult] = useState("");
+      const [loading, setLoading] = useState(false);
+      const [copied, setCopied] = useState(null);
+      const [error, setError] = useState("");
+      const [history, setHistory] = useState([]);
+      const [favorites, setFavorites] = useState([]);
+      const [filterFormat, setFilterFormat] = useState("all");
+
+      useEffect(() => {
+        try { const h = localStorage.getItem("renata:history"); if (h) setHistory(JSON.parse(h)); } catch {}
+        try { const f = localStorage.getItem("renata:favorites"); if (f) setFavorites(JSON.parse(f)); } catch {}
+      }, []);
+
+      const saveHistory = (h) => { setHistory(h); try { localStorage.setItem("renata:history", JSON.stringify(h)); } catch {} };
+      const saveFavorites = (f) => { setFavorites(f); try { localStorage.setItem("renata:favorites", JSON.stringify(f)); } catch {} };
+
+      const generate = async () => {
+        if (!topic.trim()) return;
+        setLoading(true);
+        setResult("");
+        setError("");
+        const maxTokens = format === "post" ? 700 : format === "reel" ? 850 : 1200;
+        try {
+          const res = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-api-key": API_KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+            body: JSON.stringify({
+              model: "claude-haiku-4-5-20251001",
+              max_tokens: maxTokens,
+              stream: true,
+              messages: [{ role: "user", content: buildPrompt(topic, format, platform) }],
+            }),
+          });
+
+          setLoading(false);
+          let fullText = "";
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const lines = decoder.decode(value).split("\n").filter(l => l.startsWith("data: "));
+            for (const line of lines) {
+              try {
+                const json = JSON.parse(line.slice(6));
+                if (json.type === "content_block_delta" && json.delta?.text) {
+                  fullText += json.delta.text;
+                  setResult(fullText);
+                }
+              } catch {}
+            }
+          }
+
+          const entry = {
+            id: Date.now(), topic, format, platform, text: fullText,
+            date: new Date().toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }),
+          };
+          saveHistory([entry, ...history].slice(0, 20));
+        } catch (e) {
+          setError("Błąd połączenia. Sprawdź klucz API.");
+          setLoading(false);
+        }
+      };
+
+      const toggleFav = (entry) => {
+        const exists = favorites.find(f => f.id === entry.id);
+        saveFavorites(exists ? favorites.filter(f => f.id !== entry.id) : [entry, ...favorites]);
+      };
+      const isFav = (id) => favorites.some(f => f.id === id);
+
+      const copyText = (text) => {
+        navigator.clipboard.writeText(text);
+        setCopied(text);
+        setTimeout(() => setCopied(null), 2000);
+      };
+
+      const filteredHistory = filterFormat === "all" ? history : history.filter(h => h.format === filterFormat);
+      const filteredFavs = filterFormat === "all" ? favorites : favorites.filter(f => f.format === filterFormat);
+
+      const currentEntry = result ? { id: history[0]?.id || Date.now(), topic, format, platform, text: result, date: history[0]?.date || "" } : null;
+
+      function FilterBar({ list }) {
+        return (
+          <div style={{ display: "flex", gap: "6px", marginBottom: "16px", flexWrap: "wrap" }}>
+            {["all", "post", "carousel", "reel"].map(f => (
+              <button key={f} onClick={() => setFilterFormat(f)} style={{
+                padding: "5px 12px", border: "1px solid " + (filterFormat === f ? "#8B0000" : "#e0e0e0"),
+                borderRadius: "20px", background: filterFormat === f ? "#8B0000" : "#fff",
+                color: filterFormat === f ? "#fff" : "#888",
+                fontFamily: "sans-serif", fontSize: "12px", cursor: "pointer", fontWeight: "600",
+              }}>
+                {f === "all" ? `Wszystkie (${list.length})` : `${FORMATS.find(fmt => fmt.id === f)?.label} (${list.filter(i => i.format === f).length})`}
+              </button>
+            ))}
+          </div>
+        );
+      }
+
+      function EmptyState({ icon, text, sub }) {
+        return (
+          <div style={{ textAlign: "center", padding: "40px 20px", color: "#bbb", fontFamily: "sans-serif" }}>
+            <div style={{ fontSize: "32px", marginBottom: "12px" }}>{icon}</div>
+            <p style={{ margin: 0, fontSize: "14px" }}>{text}</p>
+            <p style={{ margin: "6px 0 0", fontSize: "12px" }}>{sub}</p>
+          </div>
+        );
+      }
+
+      return (
+        <div style={{ minHeight: "100vh", background: "#fdf8f3" }}>
+          {/* Header */}
+          <div style={{ background: "#1a1a1a", padding: "18px 20px", textAlign: "center", borderBottom: "3px solid #8B0000" }}>
+            <p style={{ color: "#8B0000", fontSize: "10px", letterSpacing: "3px", textTransform: "uppercase", margin: "0 0 4px", fontFamily: "sans-serif", fontWeight: "700" }}>renatatupek.pl</p>
+            <h1 style={{ color: "#fff", fontSize: "clamp(16px, 4vw, 22px)", margin: 0, fontWeight: "bold", letterSpacing: "2px", fontFamily: "sans-serif" }}>GENERATOR TREŚCI</h1>
+            <p style={{ color: "#666", margin: "4px 0 0", fontSize: "12px", fontFamily: "sans-serif" }}>Instagram & Facebook · Post · Karuzela · Reel</p>
+          </div>
+
+          {/* Tabs */}
+          <div style={{ display: "flex", background: "#fff", borderBottom: "1px solid #e8e8e8" }}>
+            {TABS.map(t => (
+              <button key={t} onClick={() => setTab(t)} style={{
+                flex: 1, padding: "12px 4px", border: "none",
+                borderBottom: tab === t ? "2px solid #8B0000" : "2px solid transparent",
+                background: "transparent", color: tab === t ? "#8B0000" : "#aaa",
+                fontFamily: "sans-serif", fontSize: "12px", fontWeight: "700", cursor: "pointer",
+              }}>{TAB_LABELS[t]}</button>
+            ))}
+          </div>
+
+          <div style={{ maxWidth: "720px", margin: "0 auto", padding: "20px 16px" }}>
+
+            {/* GENERATOR */}
+            {tab === "generator" && (
+              <>
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", fontFamily: "sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: "#888", marginBottom: "8px" }}>Platforma</label>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    {PLATFORMS.map(p => (
+                      <button key={p.id} onClick={() => setPlatform(p.id)} style={{
+                        flex: 1, padding: "10px", border: platform === p.id ? `2px solid ${p.color}` : "2px solid #e0e0e0",
+                        borderRadius: "8px", background: platform === p.id ? `${p.color}12` : "#fff",
+                        color: platform === p.id ? p.color : "#aaa", fontFamily: "sans-serif", fontWeight: "700", fontSize: "13px", cursor: "pointer",
+                      }}>{p.label}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", fontFamily: "sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: "#888", marginBottom: "8px" }}>Format</label>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    {FORMATS.map(f => (
+                      <button key={f.id} onClick={() => setFormat(f.id)} style={{
+                        flex: 1, padding: "11px 6px", border: format === f.id ? `2px solid ${f.color}` : "2px solid #e0e0e0",
+                        borderRadius: "8px", background: format === f.id ? `${f.color}12` : "#fff",
+                        color: format === f.id ? f.color : "#aaa", fontFamily: "sans-serif", fontWeight: "700", fontSize: "12px", cursor: "pointer",
+                      }}>{f.label}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: "12px" }}>
+                  <label style={{ display: "block", fontFamily: "sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: "#888", marginBottom: "8px" }}>Temat</label>
+                  <input value={topic} onChange={e => setTopic(e.target.value)}
+                    placeholder="np. Dlaczego klienci mówią 'za drogo'..."
+                    onKeyDown={e => e.key === "Enter" && generate()}
+                    style={{ width: "100%", padding: "13px 14px", border: "2px solid #e0e0e0", borderRadius: "8px", fontSize: "15px", fontFamily: "Georgia, serif", background: "#fff", color: "#1a1a1a", outline: "none" }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: "18px", display: "flex", flexWrap: "wrap", gap: "5px" }}>
+                  {TOPICS.map(t => (
+                    <button key={t} onClick={() => setTopic(t)} style={{
+                      padding: "5px 11px", border: "1px solid " + (topic === t ? "#8B0000" : "#ddd"),
+                      borderRadius: "20px", background: topic === t ? "#8B0000" : "#fff",
+                      color: topic === t ? "#fff" : "#777", fontSize: "12px", fontFamily: "sans-serif", cursor: "pointer",
+                    }}>{t}</button>
+                  ))}
+                </div>
+
+                <button onClick={generate} disabled={!topic.trim() || loading} style={{
+                  width: "100%", padding: "15px", background: !topic.trim() || loading ? "#ccc" : "#8B0000",
+                  color: "#fff", border: "none", borderRadius: "8px", fontSize: "14px",
+                  fontFamily: "sans-serif", fontWeight: "700", cursor: !topic.trim() || loading ? "not-allowed" : "pointer",
+                  letterSpacing: "2px", textTransform: "uppercase",
+                  boxShadow: !topic.trim() || loading ? "none" : "0 4px 16px rgba(139,0,0,0.25)",
+                }}>
+                  {loading ? "✦  Piszę w stylu Renaty..." : `✦  Generuj ${FORMATS.find(f => f.id === format)?.label}`}
+                </button>
+
+                {error && <div style={{ marginTop: "12px", padding: "12px", background: "#fff0f0", border: "1px solid #fcc", borderRadius: "8px", color: "#c00", fontFamily: "sans-serif", fontSize: "13px" }}>{error}</div>}
+
+                {loading && (
+                  <div style={{ marginTop: "20px", textAlign: "center", padding: "28px", background: "#fff", borderRadius: "12px", border: "1px solid #eee" }}>
+                    <div style={{ fontSize: "22px", marginBottom: "8px" }}>✦</div>
+                    <p style={{ fontFamily: "sans-serif", color: "#8B0000", margin: 0, fontSize: "13px", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase" }}>TWORZĘ TREŚĆ W STYLU RENATY</p>
+                    <p style={{ fontFamily: "sans-serif", color: "#bbb", margin: "4px 0 0", fontSize: "12px" }}>Krótkie zdania. Kontrast. Prawda bez owijania w bawełnę.</p>
+                  </div>
+                )}
+
+                {result && !loading && currentEntry && (
+                  <div style={{ marginTop: "24px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                      <FormatBadge fmt={format} platform={platform} />
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button onClick={() => toggleFav(currentEntry)} style={{
+                          padding: "7px 12px", border: "1px solid #e0e0e0", borderRadius: "8px",
+                          background: isFav(currentEntry.id) ? "#fff8e1" : "#fff",
+                          color: isFav(currentEntry.id) ? "#f59e0b" : "#bbb", fontSize: "14px", cursor: "pointer",
+                        }}>{isFav(currentEntry.id) ? "⭐" : "☆"}</button>
+                        <button onClick={() => copyText(result)} style={{
+                          padding: "7px 15px", background: copied === result ? "#27ae60" : "#1a1a1a", color: "#fff",
+                          border: "none", borderRadius: "8px", fontFamily: "sans-serif", fontSize: "12px", fontWeight: "700", cursor: "pointer",
+                        }}>{copied === result ? "✓ Skopiowano!" : "Kopiuj"}</button>
+                      </div>
+                    </div>
+                    <div style={{
+                      background: "#fff", border: "1px solid #e8e8e8", borderRadius: "12px", padding: "20px",
+                      whiteSpace: "pre-wrap", lineHeight: "1.85", fontSize: "15px", fontFamily: "Georgia, serif",
+                      color: "#1a1a1a", borderLeft: "3px solid #8B0000",
+                    }}>{result}</div>
+                    <div style={{ marginTop: "10px", display: "flex", gap: "8px" }}>
+                      <button onClick={generate} style={{ flex: 1, padding: "11px", background: "transparent", border: "2px solid #8B0000", borderRadius: "8px", color: "#8B0000", fontFamily: "sans-serif", fontWeight: "700", fontSize: "12px", cursor: "pointer" }}>🔄 Inna wersja</button>
+                      <button onClick={() => { setResult(""); setTopic(""); }} style={{ flex: 1, padding: "11px", background: "transparent", border: "2px solid #e0e0e0", borderRadius: "8px", color: "#aaa", fontFamily: "sans-serif", fontWeight: "700", fontSize: "12px", cursor: "pointer" }}>🆕 Nowy temat</button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* HISTORIA */}
+            {tab === "historia" && (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  <h2 style={{ margin: 0, fontFamily: "sans-serif", fontSize: "15px", fontWeight: "700" }}>Historia <span style={{ color: "#8B0000" }}>({history.length}/20)</span></h2>
+                  {history.length > 0 && <button onClick={() => saveHistory([])} style={{ padding: "5px 12px", border: "1px solid #fcc", borderRadius: "8px", background: "#fff0f0", color: "#c00", fontFamily: "sans-serif", fontSize: "11px", fontWeight: "700", cursor: "pointer" }}>Wyczyść</button>}
+                </div>
+                {history.length > 0 && <FilterBar list={history} />}
+                {filteredHistory.length === 0
+                  ? <EmptyState icon="🕐" text="Brak historii." sub="Wygeneruj coś w zakładce Generator!" />
+                  : filteredHistory.map(e => <EntryCard key={e.id} entry={e} onToggleFav={toggleFav} isFav={isFav(e.id)} onCopy={copyText} />)
+                }
+              </>
+            )}
+
+            {/* ULUBIONE */}
+            {tab === "ulubione" && (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  <h2 style={{ margin: 0, fontFamily: "sans-serif", fontSize: "15px", fontWeight: "700" }}>Ulubione <span style={{ color: "#f59e0b" }}>⭐ ({favorites.length})</span></h2>
+                  {favorites.length > 0 && <button onClick={() => saveFavorites([])} style={{ padding: "5px 12px", border: "1px solid #fcc", borderRadius: "8px", background: "#fff0f0", color: "#c00", fontFamily: "sans-serif", fontSize: "11px", fontWeight: "700", cursor: "pointer" }}>Wyczyść</button>}
+                </div>
+                {favorites.length > 0 && <FilterBar list={favorites} />}
+                {filteredFavs.length === 0
+                  ? <EmptyState icon="⭐" text="Brak ulubionych." sub="Kliknij ☆ przy poście żeby zapisać!" />
+                  : filteredFavs.map(e => <EntryCard key={e.id} entry={e} onToggleFav={toggleFav} isFav={isFav(e.id)} onCopy={copyText} />)
+                }
+              </>
+            )}
+
+            <div style={{ marginTop: "32px", textAlign: "center", padding: "16px 0", borderTop: "1px solid #eee" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: "10px", color: "#ccc", margin: 0, letterSpacing: "2px", textTransform: "uppercase" }}>Sprzedaż w zgodzie ze sobą · renatatupek.pl</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
